@@ -17,7 +17,7 @@ def all_test_images():
     gray_images = []
     gray_images_16bit = []
     gray_images_32bit = []
-    for n in range(8):
+    for _ in range(8):
         bias = np.random.rand(img_w, img_h, 1) * 64
         variance = np.random.rand(img_w, img_h, 1) * (255 - 64)
         # RGB
@@ -130,8 +130,7 @@ def test_directory_iterator_class_mode_input(all_test_images, tmpdir):
     count = 0
     for test_images in all_test_images:
         for im in test_images:
-            filename = str(
-                tmpdir / 'class-1' / 'image-{}.png'.format(count))
+            filename = str(tmpdir / 'class-1' / f'image-{count}.png')
             im.save(filename)
             count += 1
 
@@ -164,7 +163,7 @@ def test_directory_iterator_with_validation_split(all_test_images,
     # create folders and subfolders
     paths = []
     for cl in range(num_classes):
-        class_directory = 'class-{}'.format(cl)
+        class_directory = f'class-{cl}'
         classpaths = [
             class_directory,
             os.path.join(class_directory, 'subfolder-1'),
@@ -185,8 +184,9 @@ def test_directory_iterator_with_validation_split(all_test_images,
             # rotate subfolders
             classpaths = paths[im_class]
             filename = os.path.join(
-                classpaths[count % len(classpaths)],
-                'image-{}.png'.format(count))
+                classpaths[count % len(classpaths)], f'image-{count}.png'
+            )
+
             filenames.append(filename)
             im.save(os.path.join(tmp_folder, filename))
             count += 1

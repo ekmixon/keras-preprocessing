@@ -66,7 +66,7 @@ def save_img(path,
         **kwargs: Additional keyword arguments passed to `PIL.Image.save()`.
     """
     img = array_to_img(x, data_format=data_format, scale=scale)
-    if img.mode == 'RGBA' and (file_format == 'jpg' or file_format == 'jpeg'):
+    if img.mode == 'RGBA' and file_format in ['jpg', 'jpeg']:
         warnings.warn('The JPG format does not support '
                       'RGBA images, converting to RGB.')
         img = img.convert('RGB')
@@ -119,8 +119,7 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
         with open(path, 'rb') as f:
             img = pil_image.open(io.BytesIO(f.read()))
     else:
-        raise TypeError('path should be path-like or io.BytesIO'
-                        ', not {}'.format(type(path)))
+        raise TypeError(f'path should be path-like or io.BytesIO, not {type(path)}')
 
     if color_mode == 'grayscale':
         # if image is not already an 8-bit, 16-bit or 32-bit grayscale image
@@ -140,10 +139,9 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
         if img.size != width_height_tuple:
             if interpolation not in _PIL_INTERPOLATION_METHODS:
                 raise ValueError(
-                    'Invalid interpolation method {} specified. Supported '
-                    'methods are {}'.format(
-                        interpolation,
-                        ", ".join(_PIL_INTERPOLATION_METHODS.keys())))
+                    f'Invalid interpolation method {interpolation} specified. Supported methods are {", ".join(_PIL_INTERPOLATION_METHODS.keys())}'
+                )
+
             resample = _PIL_INTERPOLATION_METHODS[interpolation]
 
             if keep_aspect_ratio:
@@ -183,7 +181,7 @@ def list_pictures(directory, ext=('jpg', 'jpeg', 'bmp', 'png', 'ppm', 'tif',
     # Returns
         a list of paths
     """
-    ext = tuple('.%s' % e for e in ((ext,) if isinstance(ext, str) else ext))
+    ext = tuple(f'.{e}' for e in ((ext,) if isinstance(ext, str) else ext))
     return [os.path.join(root, f)
             for root, _, files in os.walk(directory) for f in files
             if f.lower().endswith(ext)]
@@ -290,7 +288,7 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
                          'Got array with shape: %s' % (x.shape,))
 
     if data_format not in {'channels_first', 'channels_last'}:
-        raise ValueError('Invalid data_format: %s' % data_format)
+        raise ValueError(f'Invalid data_format: {data_format}')
 
     # Original Numpy array x has format (height, width, channel)
     # or (channel, height, width)
@@ -316,7 +314,7 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
             return pil_image.fromarray(x[:, :, 0].astype('int32'), 'I')
         return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
     else:
-        raise ValueError('Unsupported channel number: %s' % (x.shape[2],))
+        raise ValueError(f'Unsupported channel number: {x.shape[2]}')
 
 
 def img_to_array(img, data_format='channels_last', dtype='float32'):
@@ -335,7 +333,7 @@ def img_to_array(img, data_format='channels_last', dtype='float32'):
         ValueError: if invalid `img` or `data_format` is passed.
     """
     if data_format not in {'channels_first', 'channels_last'}:
-        raise ValueError('Unknown data_format: %s' % data_format)
+        raise ValueError(f'Unknown data_format: {data_format}')
     # Numpy array x has format (height, width, channel)
     # or (channel, height, width)
     # but original PIL image has format (width, height, channel)
@@ -349,5 +347,5 @@ def img_to_array(img, data_format='channels_last', dtype='float32'):
         else:
             x = x.reshape((x.shape[0], x.shape[1], 1))
     else:
-        raise ValueError('Unsupported image shape: %s' % (x.shape,))
+        raise ValueError(f'Unsupported image shape: {x.shape}')
     return x

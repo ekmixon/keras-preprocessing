@@ -11,7 +11,7 @@ def all_test_images():
     rgb_images = []
     rgba_images = []
     gray_images = []
-    for n in range(8):
+    for _ in range(8):
         bias = np.random.rand(img_w, img_h, 1) * 64
         variance = np.random.rand(img_w, img_h, 1) * (255 - 64)
         imarray = np.random.rand(img_w, img_h, 3) * variance + bias
@@ -32,10 +32,7 @@ def all_test_images():
 
 def test_image_data_generator(all_test_images):
     for test_images in all_test_images:
-        img_list = []
-        for im in test_images:
-            img_list.append(utils.img_to_array(im)[None, ...])
-
+        img_list = [utils.img_to_array(im)[None, ...] for im in test_images]
         image_data_generator.ImageDataGenerator(
             featurewise_center=True,
             samplewise_center=True,
@@ -59,14 +56,12 @@ def test_image_data_generator(all_test_images):
 
 def test_image_data_generator_with_validation_split(all_test_images):
     for test_images in all_test_images:
-        img_list = []
-        for im in test_images:
-            img_list.append(utils.img_to_array(im)[None, ...])
-
+        img_list = [utils.img_to_array(im)[None, ...] for im in test_images]
         images = np.vstack(img_list)
-        labels = np.concatenate([
-            np.zeros((int(len(images) / 2),)),
-            np.ones((int(len(images) / 2),))])
+        labels = np.concatenate(
+            [np.zeros((len(images) // 2,)), np.ones((len(images) // 2,))]
+        )
+
         generator = image_data_generator.ImageDataGenerator(validation_split=0.5)
 
         # training and validation sets would have different
@@ -85,12 +80,15 @@ def test_image_data_generator_with_validation_split(all_test_images):
                        ignore_class_split=True,
                        subset='validation')
 
-        labels = np.concatenate([
-            np.zeros((int(len(images) / 4),)),
-            np.ones((int(len(images) / 4),)),
-            np.zeros((int(len(images) / 4),)),
-            np.ones((int(len(images) / 4),))
-        ])
+        labels = np.concatenate(
+            [
+                np.zeros((len(images) // 4,)),
+                np.ones((len(images) // 4,)),
+                np.zeros((len(images) // 4,)),
+                np.ones((len(images) // 4,)),
+            ]
+        )
+
 
         seq = generator.flow(images, labels,
                              shuffle=False, batch_size=10,
@@ -202,10 +200,7 @@ def test_image_data_generator_fit():
 
 def test_image_data_generator_flow(all_test_images, tmpdir):
     for test_images in all_test_images:
-        img_list = []
-        for im in test_images:
-            img_list.append(utils.img_to_array(im)[None, ...])
-
+        img_list = [utils.img_to_array(im)[None, ...] for im in test_images]
         images = np.vstack(img_list)
         dsize = images.shape[0]
         generator = image_data_generator.ImageDataGenerator(
@@ -297,11 +292,11 @@ def test_image_data_generator_flow(all_test_images, tmpdir):
         x_misc_err = np.random.random((dsize + 1, 3, 3))
         with pytest.raises(ValueError) as e_info:
             generator.flow((images, x_misc_err), np.arange(dsize), batch_size=3)
-        assert str(e_info.value).find('All of the arrays in') != -1
+        assert 'All of the arrays in' in str(e_info.value)
 
         with pytest.raises(ValueError) as e_info:
             generator.flow((images, x_misc1), np.arange(dsize + 1), batch_size=3)
-        assert str(e_info.value).find('`x` (images tensor) and `y` (labels) ') != -1
+        assert '`x` (images tensor) and `y` (labels) ' in str(e_info.value)
 
         # Test `flow` behavior as Sequence
         generator.flow(
@@ -345,10 +340,7 @@ def test_valid_args():
 def test_batch_standardize(all_test_images):
     # ImageDataGenerator.standardize should work on batches
     for test_images in all_test_images:
-        img_list = []
-        for im in test_images:
-            img_list.append(utils.img_to_array(im)[None, ...])
-
+        img_list = [utils.img_to_array(im)[None, ...] for im in test_images]
         images = np.vstack(img_list)
         generator = image_data_generator.ImageDataGenerator(
             featurewise_center=True,
@@ -450,9 +442,7 @@ def test_fit_rescale(all_test_images):
     rescale = 1. / 255
 
     for test_images in all_test_images:
-        img_list = []
-        for im in test_images:
-            img_list.append(utils.img_to_array(im)[None, ...])
+        img_list = [utils.img_to_array(im)[None, ...] for im in test_images]
         images = np.vstack(img_list)
 
         # featurewise_center test

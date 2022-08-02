@@ -272,8 +272,7 @@ def transform_matrix_offset_center(matrix, x, y):
     o_y = float(y) / 2 - 0.5
     offset_matrix = np.array([[1, 0, o_x], [0, 1, o_y], [0, 0, 1]])
     reset_matrix = np.array([[1, 0, -o_x], [0, 1, -o_y], [0, 0, 1]])
-    transform_matrix = np.dot(np.dot(offset_matrix, matrix), reset_matrix)
-    return transform_matrix
+    return np.dot(np.dot(offset_matrix, matrix), reset_matrix)
 
 
 def apply_affine_transform(x, theta=0, tx=0, ty=0, shear=0, zx=1, zy=1,
@@ -316,8 +315,8 @@ def apply_affine_transform(x, theta=0, tx=0, ty=0, shear=0, zx=1, zy=1,
                          " must be distinct")
 
     # TODO: shall we support negative indices?
-    valid_indices = set([0, 1, 2])
-    actual_indices = set([row_axis, col_axis, channel_axis])
+    valid_indices = {0, 1, 2}
+    actual_indices = {row_axis, col_axis, channel_axis}
     if actual_indices != valid_indices:
         raise ValueError(
             f"Invalid axis' indices: {actual_indices - valid_indices}")

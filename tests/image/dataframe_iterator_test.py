@@ -16,7 +16,7 @@ def all_test_images():
     rgb_images = []
     rgba_images = []
     gray_images = []
-    for n in range(8):
+    for _ in range(8):
         bias = np.random.rand(img_w, img_h, 1) * 64
         variance = np.random.rand(img_w, img_h, 1) * (255 - 64)
         imarray = np.random.rand(img_w, img_h, 3) * variance + bias
@@ -128,7 +128,7 @@ def test_dataframe_iterator_validate_filenames(all_test_images, tmpdir):
     filenames = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1
@@ -151,7 +151,7 @@ def test_dataframe_iterator_sample_weights(all_test_images, tmpdir):
     filenames = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1
@@ -193,7 +193,7 @@ def test_dataframe_iterator_class_mode_input(all_test_images, tmpdir):
     filenames = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1
@@ -237,7 +237,7 @@ def test_dataframe_iterator_class_mode_categorical_multi_label(all_test_images,
     count = 0
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1
@@ -282,7 +282,7 @@ def test_dataframe_iterator_class_mode_multi_output(all_test_images, tmpdir):
     count = 0
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1
@@ -351,7 +351,7 @@ def test_dataframe_iterator_class_mode_raw(all_test_images, tmpdir):
     count = 0
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1
@@ -399,8 +399,8 @@ def test_dataframe_iterator_with_validation_split(all_test_images, validation_sp
     filenames_without = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = "image-{}.png".format(count)
-            filename_without = "image-{}".format(count)
+            filename = f"image-{count}.png"
+            filename_without = f"image-{count}"
             filenames.append(filename)
             filenames_without.append(filename_without)
             im.save(str(tmpdir / filename))
@@ -445,7 +445,7 @@ def test_dataframe_iterator_with_custom_indexed_dataframe(all_test_images, tmpdi
     filenames = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = "image-{}.png".format(count)
+            filename = f"image-{count}.png"
             filenames.append(filename)
             im.save(str(tmpdir / filename))
             count += 1
@@ -473,7 +473,7 @@ def test_dataframe_iterator_with_custom_indexed_dataframe(all_test_images, tmpdi
         df3, str(tmpdir), seed=seed)
 
     # Test all iterators return same pairs of arrays
-    for _ in range(len(filenames)):
+    for filename_ in filenames:
         a1, c1 = next(df_iterator)
         a2, c2 = next(df2_iterator)
         a3, c3 = next(df3_iterator)
@@ -490,7 +490,7 @@ def test_dataframe_iterator_n(all_test_images, tmpdir):
     filenames = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = "image-{}.png".format(count)
+            filename = f"image-{count}.png"
             filenames.append(filename)
             im.save(str(tmpdir / filename))
             count += 1
@@ -602,7 +602,7 @@ def test_dataframe_iterator_with_subdirs(all_test_images, tmpdir):
     # create folders and subfolders
     paths = []
     for cl in range(num_classes):
-        class_directory = 'class-{}'.format(cl)
+        class_directory = f'class-{cl}'
         classpaths = [
             class_directory,
             os.path.join(class_directory, 'subfolder-1'),
@@ -623,8 +623,9 @@ def test_dataframe_iterator_with_subdirs(all_test_images, tmpdir):
             # rotate subfolders
             classpaths = paths[im_class]
             filename = os.path.join(
-                classpaths[count % len(classpaths)],
-                'image-{}.png'.format(count))
+                classpaths[count % len(classpaths)], f'image-{count}.png'
+            )
+
             filenames.append(filename)
             im.save(str(tmpdir / filename))
             count += 1
@@ -651,7 +652,7 @@ def test_dataframe_iterator_classes_indices_order(all_test_images, tmpdir):
     filenames = []
     for test_images in all_test_images:
         for im in test_images:
-            filename = 'image-{}.png'.format(count)
+            filename = f'image-{count}.png'
             im.save(str(tmpdir / filename))
             filenames.append(filename)
             count += 1

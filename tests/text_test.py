@@ -46,9 +46,7 @@ def test_tokenizer():
     tokenizer = text.Tokenizer(num_words=10)
     tokenizer.fit_on_texts(sample_texts)
 
-    sequences = []
-    for seq in tokenizer.texts_to_sequences_generator(sample_texts):
-        sequences.append(seq)
+    sequences = list(tokenizer.texts_to_sequences_generator(sample_texts))
     assert np.max(np.max(sequences)) < 10
     assert np.min(np.min(sequences)) == 1
 
@@ -82,7 +80,7 @@ def test_tokenizer_serde_fitting():
     tokenizer.fit_on_texts(sample_texts)
 
     seq_generator = tokenizer.texts_to_sequences_generator(sample_texts)
-    sequences = [seq for seq in seq_generator]
+    sequences = list(seq_generator)
     tokenizer.fit_on_sequences(sequences)
 
     tokenizer_json = tokenizer.to_json()

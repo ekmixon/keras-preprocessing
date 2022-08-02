@@ -12,7 +12,7 @@ def all_test_images():
     rgb_images = []
     rgba_images = []
     gray_images = []
-    for n in range(8):
+    for _ in range(8):
         bias = np.random.rand(img_w, img_h, 1) * 64
         variance = np.random.rand(img_w, img_h, 1) * (255 - 64)
         imarray = np.random.rand(img_w, img_h, 3) * variance + bias
@@ -56,9 +56,7 @@ def image_data_generator():
 
 def test_numpy_array_iterator(image_data_generator, all_test_images, tmpdir):
     for test_images in all_test_images:
-        img_list = []
-        for im in test_images:
-            img_list.append(utils.img_to_array(im)[None, ...])
+        img_list = [utils.img_to_array(im)[None, ...] for im in test_images]
         images = np.vstack(img_list)
         dsize = images.shape[0]
 
@@ -206,7 +204,7 @@ def test_numpy_array_iterator(image_data_generator, all_test_images, tmpdir):
                 generator,
                 batch_size=3
             )
-        assert str(e_info.value).find('All of the arrays in') != -1
+        assert 'All of the arrays in' in str(e_info.value)
 
         with pytest.raises(ValueError) as e_info:
             numpy_array_iterator.NumpyArrayIterator(
@@ -215,7 +213,7 @@ def test_numpy_array_iterator(image_data_generator, all_test_images, tmpdir):
                 generator,
                 batch_size=3
             )
-        assert str(e_info.value).find('`x` (images tensor) and `y` (labels) ') != -1
+        assert '`x` (images tensor) and `y` (labels) ' in str(e_info.value)
 
         # Test `flow` behavior as Sequence
         seq = numpy_array_iterator.NumpyArrayIterator(

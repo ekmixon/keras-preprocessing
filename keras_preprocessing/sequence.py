@@ -73,9 +73,10 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
 
     is_dtype_str = np.issubdtype(dtype, np.str_) or np.issubdtype(dtype, np.unicode_)
     if isinstance(value, str) and dtype != object and not is_dtype_str:
-        raise ValueError("`dtype` {} is not compatible with `value`'s type: {}\n"
-                         "You should set `dtype=object` for variable length strings."
-                         .format(dtype, type(value)))
+        raise ValueError(
+            f"`dtype` {dtype} is not compatible with `value`'s type: {type(value)}\nYou should set `dtype=object` for variable length strings."
+        )
+
 
     x = np.full((num_samples, maxlen) + sample_shape, value, dtype=dtype)
     for idx, s in enumerate(sequences):
@@ -194,9 +195,8 @@ def skipgrams(sequence, vocabulary_size,
     for i, wi in enumerate(sequence):
         if not wi:
             continue
-        if sampling_table is not None:
-            if sampling_table[wi] < random.random():
-                continue
+        if sampling_table is not None and sampling_table[wi] < random.random():
+            continue
 
         window_start = max(0, i - window_size)
         window_end = min(len(sequence), i + window_size + 1)
@@ -327,10 +327,16 @@ class TimeseriesGenerator(object):
                  batch_size=128):
 
         if len(data) != len(targets):
-            raise ValueError('Data and targets have to be' +
-                             ' of same length. '
-                             'Data length is {}'.format(len(data)) +
-                             ' while target length is {}'.format(len(targets)))
+            raise ValueError(
+                (
+                    (
+                        'Data and targets have to be'
+                        + f' of same length. Data length is {len(data)}'
+                    )
+                    + f' while target length is {len(targets)}'
+                )
+            )
+
 
         self.data = data
         self.targets = targets
@@ -368,9 +374,7 @@ class TimeseriesGenerator(object):
                             for row in rows])
         targets = np.array([self.targets[row] for row in rows])
 
-        if self.reverse:
-            return samples[:, ::-1, ...], targets
-        return samples, targets
+        return (samples[:, ::-1, ...], targets) if self.reverse else (samples, targets)
 
     def get_config(self):
         '''Returns the TimeseriesGenerator configuration as Python dictionary.

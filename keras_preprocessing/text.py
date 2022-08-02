@@ -168,7 +168,7 @@ class Tokenizer(object):
             num_words = kwargs.pop('nb_words')
         document_count = kwargs.pop('document_count', 0)
         if kwargs:
-            raise TypeError('Unrecognized keyword arguments: ' + str(kwargs))
+            raise TypeError(f'Unrecognized keyword arguments: {kwargs}')
 
         self.word_counts = OrderedDict()
         self.word_docs = defaultdict(int)
@@ -199,21 +199,26 @@ class Tokenizer(object):
         """
         for text in texts:
             self.document_count += 1
-            if self.char_level or isinstance(text, list):
-                if self.lower:
-                    if isinstance(text, list):
-                        text = [text_elem.lower() for text_elem in text]
-                    else:
-                        text = text.lower()
-                seq = text
+            if (
+                not self.char_level
+                and not isinstance(text, list)
+                and self.analyzer is None
+            ):
+                seq = text_to_word_sequence(text,
+                                            filters=self.filters,
+                                            lower=self.lower,
+                                            split=self.split)
+            elif not self.char_level and not isinstance(text, list):
+                seq = self.analyzer(text)
             else:
-                if self.analyzer is None:
-                    seq = text_to_word_sequence(text,
-                                                filters=self.filters,
-                                                lower=self.lower,
-                                                split=self.split)
-                else:
-                    seq = self.analyzer(text)
+                if self.lower:
+                    text = (
+                        [text_elem.lower() for text_elem in text]
+                        if isinstance(text, list)
+                        else text.lower()
+                    )
+
+                seq = text
             for w in seq:
                 if w in self.word_counts:
                     self.word_counts[w] += 1
@@ -226,10 +231,7 @@ class Tokenizer(object):
         wcounts = list(self.word_counts.items())
         wcounts.sort(key=lambda x: x[1], reverse=True)
         # forcing the oov_token to index 1 if it exists
-        if self.oov_token is None:
-            sorted_voc = []
-        else:
-            sorted_voc = [self.oov_token]
+        sorted_voc = [] if self.oov_token is None else [self.oov_token]
         sorted_voc.extend(wc[0] for wc in wcounts)
 
         # note that index 0 is reserved, never assigned to an existing word
@@ -289,32 +291,40 @@ class Tokenizer(object):
         num_words = self.num_words
         oov_token_index = self.word_index.get(self.oov_token)
         for text in texts:
-            if self.char_level or isinstance(text, list):
-                if self.lower:
-                    if isinstance(text, list):
-                        text = [text_elem.lower() for text_elem in text]
-                    else:
-                        text = text.lower()
-                seq = text
+            if (
+                not self.char_level
+                and not isinstance(text, list)
+                and self.analyzer is None
+            ):
+                seq = text_to_word_sequence(text,
+                                            filters=self.filters,
+                                            lower=self.lower,
+                                            split=self.split)
+            elif not self.char_level and not isinstance(text, list):
+                seq = self.analyzer(text)
             else:
-                if self.analyzer is None:
-                    seq = text_to_word_sequence(text,
-                                                filters=self.filters,
-                                                lower=self.lower,
-                                                split=self.split)
-                else:
-                    seq = self.analyzer(text)
+                if self.lower:
+                    text = (
+                        [text_elem.lower() for text_elem in text]
+                        if isinstance(text, list)
+                        else text.lower()
+                    )
+
+                seq = text
             vect = []
             for w in seq:
                 i = self.word_index.get(w)
-                if i is not None:
-                    if num_words and i >= num_words:
-                        if oov_token_index is not None:
-                            vect.append(oov_token_index)
-                    else:
-                        vect.append(i)
-                elif self.oov_token is not None:
+                if (
+                    i is not None
+                    and num_words
+                    and i >= num_words
+                    and oov_token_index is not None
+                    or i is None
+                    and self.oov_token is not None
+                ):
                     vect.append(oov_token_index)
+                elif (i is None or not num_words or i < num_words) and i is not None:
+                    vect.append(i)
             yield vect
 
     def sequences_to_texts(self, sequences):
@@ -352,16 +362,20 @@ class Tokenizer(object):
             vect = []
             for num in seq:
                 word = self.index_word.get(num)
-                if word is not None:
-                    if num_words and num >= num_words:
-                        if oov_token_index is not None:
-                            vect.append(self.index_word[oov_token_index])
-                    else:
-                        vect.append(word)
-                elif self.oov_token is not None:
+                if (
+                    word is not None
+                    and num_words
+                    and num >= num_words
+                    and oov_token_index is not None
+                    or word is None
+                    and self.oov_token is not None
+                ):
                     vect.append(self.index_word[oov_token_index])
-            vect = ' '.join(vect)
-            yield vect
+                elif (
+                    word is None or not num_words or num < num_words
+                ) and word is not None:
+                    vect.append(word)
+            yield ' '.join(vect)
 
     def texts_to_matrix(self, texts, mode='binary'):
         """Convert a list of texts to a Numpy matrix.
@@ -391,15 +405,14 @@ class Tokenizer(object):
             ValueError: In case of invalid `mode` argument,
                 or if the Tokenizer requires to be fit to sample data.
         """
-        if not self.num_words:
-            if self.word_index:
-                num_words = len(self.word_index) + 1
-            else:
-                raise ValueError('Specify a dimension (`num_words` argument), '
-                                 'or fit on some text data first.')
-        else:
+        if self.num_words:
             num_words = self.num_words
 
+        elif self.word_index:
+            num_words = len(self.word_index) + 1
+        else:
+            raise ValueError('Specify a dimension (`num_words` argument), '
+                             'or fit on some text data first.')
         if mode == 'tfidf' and not self.document_count:
             raise ValueError('Fit the Tokenizer on some data '
                              'before using tfidf mode.')

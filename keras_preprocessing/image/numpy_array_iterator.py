@@ -135,10 +135,7 @@ class NumpyArrayIterator(Iterator):
                           'However, it was passed an array with shape ' +
                           str(self.x.shape) + ' (' +
                           str(self.x.shape[channels_axis]) + ' channels).')
-        if y is not None:
-            self.y = np.asarray(y)
-        else:
-            self.y = None
+        self.y = np.asarray(y) if y is not None else None
         if sample_weight is not None:
             self.sample_weight = np.asarray(sample_weight)
         else:
@@ -174,8 +171,7 @@ class NumpyArrayIterator(Iterator):
                     format=self.save_format)
                 img.save(os.path.join(self.save_to_dir, fname))
         batch_x_miscs = [xx[index_array] for xx in self.x_misc]
-        output = (batch_x if batch_x_miscs == []
-                  else [batch_x] + batch_x_miscs,)
+        output = ([batch_x] + batch_x_miscs if batch_x_miscs else batch_x, )
         if self.y is None:
             return output[0]
         output += (self.y[index_array],)

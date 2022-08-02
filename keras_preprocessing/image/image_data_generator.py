@@ -329,26 +329,27 @@ class ImageDataGenerator(object):
                               '`zca_whitening` '
                               'which overrides setting of'
                               '`featurewise_std_normalization`.')
-        if featurewise_std_normalization:
-            if not featurewise_center:
-                self.featurewise_center = True
-                warnings.warn('This ImageDataGenerator specifies '
-                              '`featurewise_std_normalization`, '
-                              'which overrides setting of '
-                              '`featurewise_center`.')
-        if samplewise_std_normalization:
-            if not samplewise_center:
-                self.samplewise_center = True
-                warnings.warn('This ImageDataGenerator specifies '
-                              '`samplewise_std_normalization`, '
-                              'which overrides setting of '
-                              '`samplewise_center`.')
-        if brightness_range is not None:
-            if (not isinstance(brightness_range, (tuple, list)) or
-                    len(brightness_range) != 2):
-                raise ValueError(
-                    '`brightness_range should be tuple or list of two floats. '
-                    'Received: %s' % (brightness_range,))
+        if featurewise_std_normalization and not featurewise_center:
+            self.featurewise_center = True
+            warnings.warn('This ImageDataGenerator specifies '
+                          '`featurewise_std_normalization`, '
+                          'which overrides setting of '
+                          '`featurewise_center`.')
+        if samplewise_std_normalization and not samplewise_center:
+            self.samplewise_center = True
+            warnings.warn('This ImageDataGenerator specifies '
+                          '`samplewise_std_normalization`, '
+                          'which overrides setting of '
+                          '`samplewise_center`.')
+        if brightness_range is not None and (
+            (
+                not isinstance(brightness_range, (tuple, list))
+                or len(brightness_range) != 2
+            )
+        ):
+            raise ValueError(
+                '`brightness_range should be tuple or list of two floats. '
+                'Received: %s' % (brightness_range,))
         self.brightness_range = brightness_range
 
     def flow(self,
@@ -815,18 +816,18 @@ class ImageDataGenerator(object):
             brightness = np.random.uniform(self.brightness_range[0],
                                            self.brightness_range[1])
 
-        transform_parameters = {'theta': theta,
-                                'tx': tx,
-                                'ty': ty,
-                                'shear': shear,
-                                'zx': zx,
-                                'zy': zy,
-                                'flip_horizontal': flip_horizontal,
-                                'flip_vertical': flip_vertical,
-                                'channel_shift_intensity': channel_shift_intensity,
-                                'brightness': brightness}
-
-        return transform_parameters
+        return {
+            'theta': theta,
+            'tx': tx,
+            'ty': ty,
+            'shear': shear,
+            'zx': zx,
+            'zy': zy,
+            'flip_horizontal': flip_horizontal,
+            'flip_vertical': flip_vertical,
+            'channel_shift_intensity': channel_shift_intensity,
+            'brightness': brightness,
+        }
 
     def apply_transform(self, x, transform_parameters):
         """Applies a transformation to an image according to given parameters.

@@ -175,20 +175,21 @@ class BatchFromFilesMixin():
         self.color_mode = color_mode
         self.data_format = data_format
         if self.color_mode == 'rgba':
-            if self.data_format == 'channels_last':
-                self.image_shape = self.target_size + (4,)
-            else:
-                self.image_shape = (4,) + self.target_size
+            self.image_shape = (
+                self.target_size + (4,)
+                if self.data_format == 'channels_last'
+                else (4,) + self.target_size
+            )
+
         elif self.color_mode == 'rgb':
             if self.data_format == 'channels_last':
                 self.image_shape = self.target_size + (3,)
             else:
                 self.image_shape = (3,) + self.target_size
+        elif self.data_format == 'channels_last':
+            self.image_shape = self.target_size + (1,)
         else:
-            if self.data_format == 'channels_last':
-                self.image_shape = self.target_size + (1,)
-            else:
-                self.image_shape = (1,) + self.target_size
+            self.image_shape = (1,) + self.target_size
         self.save_to_dir = save_to_dir
         self.save_prefix = save_prefix
         self.save_format = save_format
@@ -274,21 +275,18 @@ class BatchFromFilesMixin():
     def filepaths(self):
         """List of absolute paths to image files"""
         raise NotImplementedError(
-            '`filepaths` property method has not been implemented in {}.'
-            .format(type(self).__name__)
+            f'`filepaths` property method has not been implemented in {type(self).__name__}.'
         )
 
     @property
     def labels(self):
         """Class labels of every observation"""
         raise NotImplementedError(
-            '`labels` property method has not been implemented in {}.'
-            .format(type(self).__name__)
+            f'`labels` property method has not been implemented in {type(self).__name__}.'
         )
 
     @property
     def sample_weight(self):
         raise NotImplementedError(
-            '`sample_weight` property method has not been implemented in {}.'
-            .format(type(self).__name__)
+            f'`sample_weight` property method has not been implemented in {type(self).__name__}.'
         )
